@@ -1,0 +1,32 @@
+<%- include('../partials/head', { title: 'Chỉnh sửa User' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="py-5">
+  <div class="container">
+    <div class="card form-card shadow-sm">
+      <div class="card-body">
+        <h2 class="h4 mb-3">Chỉnh sửa User</h2>
+        <form method="POST" action="/update-user/<%= user._id %>" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input class="form-control" type="text" name="name" value="<%= user.name %>" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" name="email" value="<%= user.email %>" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Age</label>
+            <input class="form-control" type="number" name="age" value="<%= user.age %>" />
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-success btn-icon" type="submit"><i class="bi bi-save"></i> Cập nhật</button>
+            <a href="/users" class="btn btn-outline-secondary btn-icon"><i class="bi bi-arrow-left"></i> Quay lại</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>
