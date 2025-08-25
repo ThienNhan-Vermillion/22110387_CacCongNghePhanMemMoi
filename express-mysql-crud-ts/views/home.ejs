@@ -1,0 +1,44 @@
+<%- include('partials/head', { title: 'Trang Chủ - CRUD App' }) %>
+<%- include('partials/navbar') %>
+
+<header class="hero gradient-hero py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="d-flex gap-2">
+          <a href="/users" class="btn btn-light btn-lg"><i class="bi bi-people"></i> Xem danh sách</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="py-5">
+  <div class="container">
+    <div class="card form-card shadow-sm">
+      <div class="card-body">
+        <h2 class="h4 mb-3">Tạo User</h2>
+        <form method="POST" action="/create-user" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input class="form-control" type="text" name="name" placeholder="Jane Doe" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" name="email" placeholder="jane@example.com" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Age</label>
+            <input class="form-control" type="number" name="age" placeholder="22" />
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary btn-icon" type="submit"><i class="bi bi-check2-circle"></i> Create</button>
+            <a href="/users" class="btn btn-outline-secondary btn-icon"><i class="bi bi-list"></i> View Users</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

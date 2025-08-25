@@ -1,0 +1,65 @@
+<%- include('../partials/head', { title: 'Danh sách Users - CRUD App' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Danh sách Users</h1>
+      <a href="/" class="btn btn-primary btn-icon">
+        <i class="bi bi-plus-circle"></i> Tạo User mới
+      </a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (users && users.length > 0) { %>
+                <% users.forEach(user => { %>
+                  <tr>
+                    <td><%= user.id %></td>
+                    <td><%= user.name %></td>
+                    <td><%= user.email %></td>
+                    <td><%= user.age || '-' %></td>
+                    <td><%= new Date(user.created_at).toLocaleDateString('vi-VN') %></td>
+                    <td>
+                      <div class="btn-group btn-group-sm" role="group">
+                        <a href="/edit-user/<%= user.id %>" class="btn btn-outline-primary btn-icon" title="Edit">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="/delete-user/<%= user.id %>" class="btn btn-outline-danger btn-icon" 
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa user này?')" title="Delete">
+                          <i class="bi bi-trash"></i>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                    Không có users nào
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>
