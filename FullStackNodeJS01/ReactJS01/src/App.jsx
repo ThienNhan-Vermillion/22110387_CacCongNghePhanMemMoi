@@ -6,6 +6,8 @@ import HomePage from './pages/home'
 import LoginPage from './pages/login'
 import RegisterPage from './pages/register'
 import UserPage from './pages/user'
+import ProductsPage from './pages/products'
+import ProductDetailPage from './pages/productDetail'
 import axios from './utils/axios.customize'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from './components/context/auth.context.jsx'
@@ -50,6 +52,8 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/user" element={<UserPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
             </Routes>
           </div>
           <Outlet />

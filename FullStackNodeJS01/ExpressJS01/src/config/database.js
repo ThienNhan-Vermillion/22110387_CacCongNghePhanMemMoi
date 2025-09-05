@@ -21,7 +21,9 @@ const dbState = [
 ];
 
 const connection = async () => {
-    await mongoose.connect(process.env.MONGO_DB_URL);
+    const mongoURI = process.env.MONGODB_URI || process.env.MONGO_DB_URL || 'mongodb://localhost:27017/fullstackdb';
+    console.log('Connecting to MongoDB with URI:', mongoURI);
+    await mongoose.connect(mongoURI);
     const state = Number(mongoose.connection.readyState);
     console.log(dbState.find(f => f.value === state).label, "to database"); // connected to db
 }
