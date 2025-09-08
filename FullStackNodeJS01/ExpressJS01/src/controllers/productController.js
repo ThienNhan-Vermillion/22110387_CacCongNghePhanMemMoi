@@ -226,6 +226,7 @@ const fuzzySearch = async (req, res) => {
         if (filters.maxPrice) filterParams.maxPrice = parseFloat(filters.maxPrice);
         if (filters.minRating) filterParams.minRating = parseFloat(filters.minRating);
         if (filters.minDiscount) filterParams.minDiscount = parseFloat(filters.minDiscount);
+        if (filters.minViewCount) filterParams.minViewCount = parseFloat(filters.minViewCount);
         if (filters.inStock === 'true') filterParams.inStock = true;
         if (filters.tags) filterParams.tags = filters.tags.split(',');
 
@@ -266,6 +267,7 @@ const filterProductsAdvanced = async (req, res) => {
         if (filters.maxPrice) filterParams.maxPrice = parseFloat(filters.maxPrice);
         if (filters.minRating) filterParams.minRating = parseFloat(filters.minRating);
         if (filters.minDiscount) filterParams.minDiscount = parseFloat(filters.minDiscount);
+        if (filters.minViewCount) filterParams.minViewCount = parseFloat(filters.minViewCount);
         if (filters.inStock === 'true') filterParams.inStock = true;
         if (filters.tags) filterParams.tags = filters.tags.split(',');
         if (filters.dateFrom) filterParams.dateFrom = filters.dateFrom;

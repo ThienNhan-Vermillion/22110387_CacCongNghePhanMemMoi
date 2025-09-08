@@ -19,6 +19,7 @@ const AdvancedSearch = ({ onSearchResults, onFilterChange }) => {
     maxPrice: '',
     minRating: '',
     minDiscount: '',
+    minViewCount: '',
     inStock: false,
     tags: []
   });
@@ -134,6 +135,7 @@ const AdvancedSearch = ({ onSearchResults, onFilterChange }) => {
       maxPrice: '',
       minRating: '',
       minDiscount: '',
+      minViewCount: '',
       inStock: false,
       tags: []
     };
@@ -280,6 +282,19 @@ const AdvancedSearch = ({ onSearchResults, onFilterChange }) => {
               </select>
             </div>
 
+            {/* View Count Filter */}
+            <div className="filter-group">
+              <label>Lượt xem tối thiểu</label>
+              <input
+                type="number"
+                placeholder="Ví dụ: 500"
+                value={filters.minViewCount}
+                onChange={(e) => handleFilterChange('minViewCount', e.target.value)}
+                className="price-input"
+                min="0"
+              />
+            </div>
+
             {/* Stock Filter */}
             <div className="filter-group">
               <label>
@@ -294,16 +309,7 @@ const AdvancedSearch = ({ onSearchResults, onFilterChange }) => {
             </div>
           </div>
 
-          {/* Apply Filters Button */}
-          <div className="filter-actions">
-            <button
-              onClick={() => handleSearch()}
-              className="apply-filters-btn"
-              disabled={loading}
-            >
-              Áp dụng bộ lọc
-            </button>
-          </div>
+          {/* Auto apply on change: nút áp dụng đã được loại bỏ */}
         </div>
       )}
 

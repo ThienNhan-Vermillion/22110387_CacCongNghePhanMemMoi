@@ -91,6 +91,10 @@ const fuzzySearchProducts = async (searchTerm, page = 1, limit = 10, filters = {
             query.stock = { $gt: 0 };
         }
 
+        if (filters.minViewCount !== undefined) {
+            query.viewCount = { $gte: filters.minViewCount };
+        }
+
         if (filters.tags && filters.tags.length > 0) {
             query.tags = { $in: filters.tags };
         }
@@ -166,6 +170,10 @@ const filterProducts = async (filters = {}, page = 1, limit = 10, sortBy = 'crea
 
         if (filters.inStock) {
             query.stock = { $gt: 0 };
+        }
+
+        if (filters.minViewCount !== undefined) {
+            query.viewCount = { $gte: filters.minViewCount };
         }
 
         if (filters.tags && filters.tags.length > 0) {

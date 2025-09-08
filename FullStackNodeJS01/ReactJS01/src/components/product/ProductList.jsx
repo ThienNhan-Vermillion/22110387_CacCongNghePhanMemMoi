@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ProductCard from './ProductCard';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { getProductsApi } from '../../utils/api';
+import { getProductsApi, filterProductsApi } from '../../utils/api';
 import './ProductList.css';
 
 const ProductList = ({ 
@@ -129,32 +129,24 @@ const ProductList = ({
             setLoading(true);
             setError(null);
 
+            // Build params and clean empty values
             const paramsObj = {
                 page: 1,
-                limit: itemsPerPage.toString()
+                limit: itemsPerPage.toString(),
+                ...filters,
             };
+            Object.keys(paramsObj).forEach((key) => {
+                const val = paramsObj[key];
+                if (val === '' || val === undefined || val === null) {
+                    delete paramsObj[key];
+                }
+            });
+            if (paramsObj.minPrice !== undefined) paramsObj.minPrice = Number(paramsObj.minPrice);
+            if (paramsObj.maxPrice !== undefined) paramsObj.maxPrice = Number(paramsObj.maxPrice);
+            if (paramsObj.minRating !== undefined) paramsObj.minRating = Number(paramsObj.minRating);
+            if (paramsObj.minDiscount !== undefined) paramsObj.minDiscount = Number(paramsObj.minDiscount);
 
-            // Add filters to params
-            if (filters.category && filters.category !== 'all') {
-                paramsObj.category = filters.category;
-            }
-            if (filters.minPrice) {
-                paramsObj.minPrice = filters.minPrice;
-            }
-            if (filters.maxPrice) {
-                paramsObj.maxPrice = filters.maxPrice;
-            }
-            if (filters.minRating) {
-                paramsObj.minRating = filters.minRating;
-            }
-            if (filters.minDiscount) {
-                paramsObj.minDiscount = filters.minDiscount;
-            }
-            if (filters.inStock) {
-                paramsObj.inStock = filters.inStock;
-            }
-
-            const response = await getProductsApi(paramsObj);
+            const response = await filterProductsApi(paramsObj);
 
             if (response.EC === 0) {
                 setProducts(response.DT.products);

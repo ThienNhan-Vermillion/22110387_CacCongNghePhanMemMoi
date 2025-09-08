@@ -115,6 +115,10 @@ const fuzzySearchProducts = async (searchTerm, page = 1, limit = 10, filters = {
             query.bool.filter.push({ terms: { tags: filters.tags } });
         }
 
+        if (filters.minViewCount !== undefined) {
+            query.bool.filter.push({ range: { viewCount: { gte: filters.minViewCount } } });
+        }
+
         const searchBody = {
             index: 'products',
             body: {
@@ -237,6 +241,10 @@ const filterProducts = async (filters = {}, page = 1, limit = 10, sortBy = 'crea
         // Bộ lọc tags
         if (filters.tags && filters.tags.length > 0) {
             query.bool.filter.push({ terms: { tags: filters.tags } });
+        }
+
+        if (filters.minViewCount !== undefined) {
+            query.bool.filter.push({ range: { viewCount: { gte: filters.minViewCount } } });
         }
 
         // Bộ lọc theo ngày tạo

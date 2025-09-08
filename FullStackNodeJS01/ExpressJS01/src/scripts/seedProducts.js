@@ -10,7 +10,9 @@ const sampleProducts = [
         category: "electronics",
         image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500&h=500&fit=crop",
         stock: 50,
-        rating: 4.8
+        rating: 4.8,
+        discount: 10,
+        viewCount: 1250
     },
     {
         name: "Samsung Galaxy S24 Ultra",
@@ -19,7 +21,9 @@ const sampleProducts = [
         category: "electronics",
         image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&h=500&fit=crop",
         stock: 30,
-        rating: 4.7
+        rating: 4.7,
+        discount: 15,
+        viewCount: 980
     },
     {
         name: "MacBook Pro M3",
@@ -28,7 +32,9 @@ const sampleProducts = [
         category: "electronics",
         image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&h=500&fit=crop",
         stock: 25,
-        rating: 4.9
+        rating: 4.9,
+        discount: 5,
+        viewCount: 560
     },
     {
         name: "Áo thun nam cao cấp",
@@ -37,7 +43,9 @@ const sampleProducts = [
         category: "clothing",
         image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop",
         stock: 100,
-        rating: 4.5
+        rating: 4.5,
+        discount: 20,
+        viewCount: 340
     },
     {
         name: "Váy dạ hội nữ",
@@ -46,7 +54,9 @@ const sampleProducts = [
         category: "clothing",
         image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=500&fit=crop",
         stock: 20,
-        rating: 4.6
+        rating: 4.6,
+        discount: 30,
+        viewCount: 410
     },
     {
         name: "Giày thể thao Nike Air Max",
@@ -55,7 +65,9 @@ const sampleProducts = [
         category: "sports",
         image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&h=500&fit=crop",
         stock: 75,
-        rating: 4.4
+        rating: 4.4,
+        discount: 25,
+        viewCount: 720
     },
     {
         name: "Sách 'Clean Code'",
@@ -64,7 +76,9 @@ const sampleProducts = [
         category: "books",
         image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=500&h=500&fit=crop",
         stock: 200,
-        rating: 4.8
+        rating: 4.8,
+        discount: 35,
+        viewCount: 1100
     },
     {
         name: "Bộ nồi inox cao cấp",
@@ -73,7 +87,9 @@ const sampleProducts = [
         category: "home",
         image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop",
         stock: 40,
-        rating: 4.3
+        rating: 4.3,
+        discount: 18,
+        viewCount: 260
     },
     {
         name: "Kem dưỡng da mặt",
@@ -82,7 +98,9 @@ const sampleProducts = [
         category: "beauty",
         image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&h=500&fit=crop",
         stock: 60,
-        rating: 4.2
+        rating: 4.2,
+        discount: 22,
+        viewCount: 305
     },
     {
         name: "Xe đạp thể thao",
@@ -91,7 +109,9 @@ const sampleProducts = [
         category: "sports",
         image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop",
         stock: 15,
-        rating: 4.6
+        rating: 4.6,
+        discount: 12,
+        viewCount: 455
     },
     {
         name: "Lego Creator Expert",
@@ -100,7 +120,9 @@ const sampleProducts = [
         category: "toys",
         image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop",
         stock: 30,
-        rating: 4.7
+        rating: 4.7,
+        discount: 40,
+        viewCount: 880
     },
     {
         name: "Cà phê hạt nguyên chất",
@@ -109,7 +131,9 @@ const sampleProducts = [
         category: "food",
         image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&h=500&fit=crop",
         stock: 150,
-        rating: 4.5
+        rating: 4.5,
+        discount: 28,
+        viewCount: 190
     }
 ];
 
