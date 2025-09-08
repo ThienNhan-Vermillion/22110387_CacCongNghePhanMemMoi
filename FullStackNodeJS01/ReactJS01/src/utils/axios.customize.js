@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Set config defaults when creating the instance
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:8888',
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080',
 })
 
 // Add a request interceptor

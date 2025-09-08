@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ProductCard from './ProductCard';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { getProductsApi } from '../../utils/api';
 import './ProductList.css';
 
 const ProductList = ({ 
     category = null, 
     searchTerm = null, 
     showFilters = true,
-    itemsPerPage = 12 
+    itemsPerPage = 12,
+    searchResults = null,
+    filters = {}
 }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,6 +22,21 @@ const ProductList = ({
     const [selectedCategory, setSelectedCategory] = useState(category || 'all');
     const [search, setSearch] = useState(searchTerm || '');
 
+    // Hàm chuyển đổi tên danh mục sang tiếng Việt
+    const getCategoryDisplayName = (category) => {
+        const categoryNames = {
+            'electronics': 'Điện tử',
+            'clothing': 'Thời trang',
+            'books': 'Sách',
+            'home': 'Gia dụng',
+            'sports': 'Thể thao',
+            'beauty': 'Làm đẹp',
+            'toys': 'Đồ chơi',
+            'food': 'Thực phẩm'
+        };
+        return categoryNames[category] || category;
+    };
+
     // Fetch products
     const fetchProducts = useCallback(async (page = 1, reset = false) => {
         try {
@@ -29,24 +47,24 @@ const ProductList = ({
             }
             setError(null);
 
-            const params = new URLSearchParams({
+
+            const paramsObj = {
                 page: page.toString(),
                 limit: itemsPerPage.toString()
-            });
+            };
 
             if (selectedCategory && selectedCategory !== 'all') {
-                params.append('category', selectedCategory);
+                paramsObj.category = selectedCategory;
             }
 
             if (search) {
-                params.append('search', search);
+                paramsObj.search = search;
             }
 
-            const response = await fetch(`http://localhost:8080/v1/api/products?${params}`);
-            const data = await response.json();
+            const response = await getProductsApi(paramsObj);
 
-            if (data.EC === 0) {
-                const newProducts = data.DT.products;
+            if (response.EC === 0) {
+                const newProducts = response.DT.products;
                 
                 if (reset) {
                     setProducts(newProducts);
@@ -54,10 +72,10 @@ const ProductList = ({
                     setProducts(prev => [...prev, ...newProducts]);
                 }
                 
-                setHasMore(data.DT.pagination.hasNextPage);
+                setHasMore(response.DT.pagination.hasNextPage);
                 setCurrentPage(page);
             } else {
-                setError(data.EM);
+                setError(response.EM);
             }
         } catch (err) {
             setError('Lỗi khi tải sản phẩm');
@@ -105,6 +123,54 @@ const ProductList = ({
         fetchProducts(1, true);
     };
 
+    // Apply filters from AdvancedSearch
+    const applyFilters = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const paramsObj = {
+                page: 1,
+                limit: itemsPerPage.toString()
+            };
+
+            // Add filters to params
+            if (filters.category && filters.category !== 'all') {
+                paramsObj.category = filters.category;
+            }
+            if (filters.minPrice) {
+                paramsObj.minPrice = filters.minPrice;
+            }
+            if (filters.maxPrice) {
+                paramsObj.maxPrice = filters.maxPrice;
+            }
+            if (filters.minRating) {
+                paramsObj.minRating = filters.minRating;
+            }
+            if (filters.minDiscount) {
+                paramsObj.minDiscount = filters.minDiscount;
+            }
+            if (filters.inStock) {
+                paramsObj.inStock = filters.inStock;
+            }
+
+            const response = await getProductsApi(paramsObj);
+
+            if (response.EC === 0) {
+                setProducts(response.DT.products);
+                setHasMore(response.DT.pagination.hasNextPage);
+                setCurrentPage(1);
+            } else {
+                setError(response.EM);
+            }
+        } catch (err) {
+            setError('Lỗi khi áp dụng bộ lọc');
+            console.error('Error applying filters:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Infinite scroll
     useEffect(() => {
         const handleScroll = () => {
@@ -120,11 +186,31 @@ const ProductList = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [loadingMore, hasMore, currentPage]);
 
+    // Handle search results from AdvancedSearch
+    useEffect(() => {
+        if (searchResults) {
+            setProducts(searchResults.products);
+            setHasMore(searchResults.pagination.hasNextPage);
+            setCurrentPage(searchResults.pagination.currentPage);
+            setLoading(false);
+        }
+    }, [searchResults]);
+
+    // Handle filters from AdvancedSearch
+    useEffect(() => {
+        if (filters && Object.keys(filters).length > 0) {
+            // Apply filters and search
+            applyFilters();
+        }
+    }, [filters]);
+
     // Initial load
     useEffect(() => {
-        fetchProducts(1, true);
-        fetchCategories();
-    }, []);
+        if (!searchResults) {
+            fetchProducts(1, true);
+            fetchCategories();
+        }
+    }, [searchResults]);
 
     // Reset when category or search changes
     useEffect(() => {
@@ -157,15 +243,6 @@ const ProductList = ({
         <div className="product-list-container">
             {showFilters && (
                 <div className="product-filters">
-                    <div className="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm sản phẩm..."
-                            value={search}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
                     
                     <div className="category-filters">
                         <button
@@ -180,7 +257,7 @@ const ProductList = ({
                                 className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
                                 onClick={() => handleCategoryChange(cat)}
                             >
-                                {cat}
+                                {getCategoryDisplayName(cat)}
                             </button>
                         ))}
                     </div>
