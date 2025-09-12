@@ -8,15 +8,15 @@ const ProductList = ({
     category = null, 
     searchTerm = null, 
     showFilters = true,
-    itemsPerPage = 12,
+    itemsPerPage = 6,
     searchResults = null,
     filters = {}
 }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
     const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(category || 'all');
@@ -40,11 +40,7 @@ const ProductList = ({
     // Fetch products
     const fetchProducts = useCallback(async (page = 1, reset = false) => {
         try {
-            if (page === 1) {
-                setLoading(true);
-            } else {
-                setLoadingMore(true);
-            }
+            setLoading(true);
             setError(null);
 
 
@@ -65,15 +61,12 @@ const ProductList = ({
 
             if (response.EC === 0) {
                 const newProducts = response.DT.products;
-                
-                if (reset) {
-                    setProducts(newProducts);
-                } else {
-                    setProducts(prev => [...prev, ...newProducts]);
-                }
-                
-                setHasMore(response.DT.pagination.hasNextPage);
-                setCurrentPage(page);
+
+                setProducts(newProducts);
+                const pagination = response.DT.pagination || {};
+                setTotalPages(pagination.totalPages || 1);
+                setTotalItems(pagination.totalItems || newProducts.length);
+                setCurrentPage(pagination.currentPage || page);
             } else {
                 setError(response.EM);
             }
@@ -82,7 +75,6 @@ const ProductList = ({
             console.error('Error fetching products:', err);
         } finally {
             setLoading(false);
-            setLoadingMore(false);
         }
     }, [selectedCategory, search, itemsPerPage]);
 
@@ -100,11 +92,10 @@ const ProductList = ({
         }
     };
 
-    // Load more products
-    const loadMore = () => {
-        if (!loadingMore && hasMore) {
-            fetchProducts(currentPage + 1, false);
-        }
+    // Navigate to page
+    const goToPage = (page) => {
+        if (page < 1 || page > totalPages) return;
+        fetchProducts(page, true);
     };
 
     // Handle category change
@@ -150,8 +141,10 @@ const ProductList = ({
 
             if (response.EC === 0) {
                 setProducts(response.DT.products);
-                setHasMore(response.DT.pagination.hasNextPage);
-                setCurrentPage(1);
+                const pagination = response.DT.pagination || {};
+                setTotalPages(pagination.totalPages || 1);
+                setTotalItems(pagination.totalItems || response.DT.products.length);
+                setCurrentPage(pagination.currentPage || 1);
             } else {
                 setError(response.EM);
             }
@@ -163,27 +156,17 @@ const ProductList = ({
         }
     };
 
-    // Infinite scroll
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop >=
-                document.documentElement.offsetHeight - 1000
-            ) {
-                loadMore();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadingMore, hasMore, currentPage]);
+    // Remove infinite scroll; use numbered pagination
 
     // Handle search results from AdvancedSearch
     useEffect(() => {
         if (searchResults) {
             setProducts(searchResults.products);
-            setHasMore(searchResults.pagination.hasNextPage);
-            setCurrentPage(searchResults.pagination.currentPage);
+            if (searchResults.pagination) {
+                setTotalPages(searchResults.pagination.totalPages || 1);
+                setTotalItems(searchResults.pagination.totalItems || searchResults.products.length);
+                setCurrentPage(searchResults.pagination.currentPage || 1);
+            }
             setLoading(false);
         }
     }, [searchResults]);
@@ -269,16 +252,31 @@ const ProductList = ({
                 )}
             </div>
 
-            {loadingMore && (
-                <div className="loading-more">
-                    <LoadingSpinner />
-                    <p>Đang tải thêm sản phẩm...</p>
-                </div>
-            )}
-
-            {!hasMore && products.length > 0 && (
-                <div className="no-more-products">
-                    <p>Đã hiển thị tất cả sản phẩm</p>
+            {products.length > 0 && (
+                <div className="pagination">
+                    <button
+                        className="page-btn"
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        « Trước
+                    </button>
+                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                        <button
+                            key={pageNum}
+                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                            onClick={() => goToPage(pageNum)}
+                        >
+                            {pageNum}
+                        </button>
+                    ))}
+                    <button
+                        className="page-btn"
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Sau »
+                    </button>
                 </div>
             )}
         </div>
