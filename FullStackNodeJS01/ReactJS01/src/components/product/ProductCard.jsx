@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
+import { toggleFavoriteApi, addRecentlyViewedApi, getFavoritesApi } from '../../utils/api';
 
 const ProductCard = ({ product }) => {
     const formatPrice = (price) => {
@@ -31,8 +32,39 @@ const ProductCard = ({ product }) => {
         return stars;
     };
 
+    const [liked, setLiked] = useState(false);
+
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const res = await getFavoritesApi();
+                const ids = (res?.DT || []).map(p => (p._id || p));
+                setLiked(ids.includes(product._id));
+            } catch (e) {}
+        };
+        init();
+    }, [product._id]);
+
+    const onToggleFavorite = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        try {
+            const res = await toggleFavoriteApi(product._id);
+            if (res?.EC === 0) setLiked(res.DT.liked);
+        } catch (e) {}
+    };
+
+    const onCardClick = async () => {
+        // Track as recently viewed when user clicks on product card
+        try {
+            await addRecentlyViewedApi(product._id);
+        } catch (e) {}
+    };
+
+    // Remove automatic recently viewed tracking from card - only track when user clicks
+
     return (
-        <div className="product-card">
+        <div className="product-card" onClick={onCardClick}>
             <div className="product-image">
                 <img 
                     src={product.image} 
@@ -41,6 +73,9 @@ const ProductCard = ({ product }) => {
                         e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
                     }}
                 />
+                <button className={`favorite-btn ${liked ? 'active' : ''}`} onClick={onToggleFavorite} aria-label="favorite">
+                    <span className="heart">{liked ? '❤' : '♡'}</span>
+                </button>
                 <div className="product-overlay">
                     <Link to={`/products/${product._id}`} className="view-details-btn">
                         Xem chi tiết
@@ -63,6 +98,9 @@ const ProductCard = ({ product }) => {
                 
                 <div className="product-price">
                     <span className="current-price">{formatPrice(product.price)}</span>
+                    {product.discount > 0 && (
+                        <span className="discount">-{product.discount}%</span>
+                    )}
                 </div>
                 
                 <div className="product-meta">
@@ -70,6 +108,7 @@ const ProductCard = ({ product }) => {
                     <span className={`stock-status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
                         {product.stock > 0 ? 'Còn hàng' : 'Hết hàng'}
                     </span>
+                    <span className="view-count">{product.viewCount || 0} lượt xem</span>
                 </div>
             </div>
         </div>
@@ -77,4 +116,10 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
+
+
+
+
+
+
 

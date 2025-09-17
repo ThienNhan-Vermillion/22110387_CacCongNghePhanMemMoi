@@ -6,12 +6,18 @@
   "scripts": {
     "dev": "nodemon ./src/server.js",
     "start": "nodemon ./src/server.js",
-    "seed": "node ./src/scripts/seedProducts.js"
+    "seed": "node ./src/scripts/seedProducts.js",
+    "sync-es": "node ./src/scripts/syncToElasticsearch.js sync-all",
+    "sync-single": "node ./src/scripts/syncToElasticsearch.js sync-single",
+    "delete-es": "node ./src/scripts/syncToElasticsearch.js delete",
+    "test-es": "node ./src/scripts/testElasticsearch.js",
+    "test-fallback": "node ./src/scripts/testFallbackSearch.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@elastic/elasticsearch": "^8.11.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",

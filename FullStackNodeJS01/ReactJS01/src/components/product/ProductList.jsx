@@ -1,70 +1,80 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ProductCard from './ProductCard';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { getProductsApi, filterProductsApi } from '../../utils/api';
 import './ProductList.css';
 
 const ProductList = ({ 
     category = null, 
     searchTerm = null, 
     showFilters = true,
-    itemsPerPage = 12 
+    itemsPerPage = 6,
+    searchResults = null,
+    filters = {}
 }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
     const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(category || 'all');
     const [search, setSearch] = useState(searchTerm || '');
 
+    // Hàm chuyển đổi tên danh mục sang tiếng Việt
+    const getCategoryDisplayName = (category) => {
+        const categoryNames = {
+            'electronics': 'Điện tử',
+            'clothing': 'Thời trang',
+            'books': 'Sách',
+            'home': 'Gia dụng',
+            'sports': 'Thể thao',
+            'beauty': 'Làm đẹp',
+            'toys': 'Đồ chơi',
+            'food': 'Thực phẩm'
+        };
+        return categoryNames[category] || category;
+    };
+
     // Fetch products
     const fetchProducts = useCallback(async (page = 1, reset = false) => {
         try {
-            if (page === 1) {
-                setLoading(true);
-            } else {
-                setLoadingMore(true);
-            }
+            setLoading(true);
             setError(null);
 
-            const params = new URLSearchParams({
+
+            const paramsObj = {
                 page: page.toString(),
                 limit: itemsPerPage.toString()
-            });
+            };
 
             if (selectedCategory && selectedCategory !== 'all') {
-                params.append('category', selectedCategory);
+                paramsObj.category = selectedCategory;
             }
 
             if (search) {
-                params.append('search', search);
+                paramsObj.search = search;
             }
 
-            const response = await fetch(`http://localhost:8080/v1/api/products?${params}`);
-            const data = await response.json();
+            const response = await getProductsApi(paramsObj);
 
-            if (data.EC === 0) {
-                const newProducts = data.DT.products;
-                
-                if (reset) {
-                    setProducts(newProducts);
-                } else {
-                    setProducts(prev => [...prev, ...newProducts]);
-                }
-                
-                setHasMore(data.DT.pagination.hasNextPage);
-                setCurrentPage(page);
+            if (response.EC === 0) {
+                const newProducts = response.DT.products;
+
+                setProducts(newProducts);
+                const pagination = response.DT.pagination || {};
+                setTotalPages(pagination.totalPages || 1);
+                setTotalItems(pagination.totalItems || newProducts.length);
+                setCurrentPage(pagination.currentPage || page);
             } else {
-                setError(data.EM);
+                setError(response.EM);
             }
         } catch (err) {
             setError('Lỗi khi tải sản phẩm');
             console.error('Error fetching products:', err);
         } finally {
             setLoading(false);
-            setLoadingMore(false);
         }
     }, [selectedCategory, search, itemsPerPage]);
 
@@ -82,11 +92,10 @@ const ProductList = ({
         }
     };
 
-    // Load more products
-    const loadMore = () => {
-        if (!loadingMore && hasMore) {
-            fetchProducts(currentPage + 1, false);
-        }
+    // Navigate to page
+    const goToPage = (page) => {
+        if (page < 1 || page > totalPages) return;
+        fetchProducts(page, true);
     };
 
     // Handle category change
@@ -105,26 +114,78 @@ const ProductList = ({
         fetchProducts(1, true);
     };
 
-    // Infinite scroll
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop >=
-                document.documentElement.offsetHeight - 1000
-            ) {
-                loadMore();
-            }
-        };
+    // Apply filters from AdvancedSearch
+    const applyFilters = async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadingMore, hasMore, currentPage]);
+            // Build params and clean empty values
+            const paramsObj = {
+                page: 1,
+                limit: itemsPerPage.toString(),
+                ...filters,
+            };
+            Object.keys(paramsObj).forEach((key) => {
+                const val = paramsObj[key];
+                if (val === '' || val === undefined || val === null) {
+                    delete paramsObj[key];
+                }
+            });
+            if (paramsObj.minPrice !== undefined) paramsObj.minPrice = Number(paramsObj.minPrice);
+            if (paramsObj.maxPrice !== undefined) paramsObj.maxPrice = Number(paramsObj.maxPrice);
+            if (paramsObj.minRating !== undefined) paramsObj.minRating = Number(paramsObj.minRating);
+            if (paramsObj.minDiscount !== undefined) paramsObj.minDiscount = Number(paramsObj.minDiscount);
+
+            const response = await filterProductsApi(paramsObj);
+
+            if (response.EC === 0) {
+                setProducts(response.DT.products);
+                const pagination = response.DT.pagination || {};
+                setTotalPages(pagination.totalPages || 1);
+                setTotalItems(pagination.totalItems || response.DT.products.length);
+                setCurrentPage(pagination.currentPage || 1);
+            } else {
+                setError(response.EM);
+            }
+        } catch (err) {
+            setError('Lỗi khi áp dụng bộ lọc');
+            console.error('Error applying filters:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Remove infinite scroll; use numbered pagination
+
+    // Handle search results from AdvancedSearch
+    useEffect(() => {
+        if (searchResults) {
+            setProducts(searchResults.products);
+            if (searchResults.pagination) {
+                setTotalPages(searchResults.pagination.totalPages || 1);
+                setTotalItems(searchResults.pagination.totalItems || searchResults.products.length);
+                setCurrentPage(searchResults.pagination.currentPage || 1);
+            }
+            setLoading(false);
+        }
+    }, [searchResults]);
+
+    // Handle filters from AdvancedSearch
+    useEffect(() => {
+        if (filters && Object.keys(filters).length > 0) {
+            // Apply filters and search
+            applyFilters();
+        }
+    }, [filters]);
 
     // Initial load
     useEffect(() => {
-        fetchProducts(1, true);
-        fetchCategories();
-    }, []);
+        if (!searchResults) {
+            fetchProducts(1, true);
+            fetchCategories();
+        }
+    }, [searchResults]);
 
     // Reset when category or search changes
     useEffect(() => {
@@ -157,15 +218,6 @@ const ProductList = ({
         <div className="product-list-container">
             {showFilters && (
                 <div className="product-filters">
-                    <div className="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm sản phẩm..."
-                            value={search}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
                     
                     <div className="category-filters">
                         <button
@@ -180,7 +232,7 @@ const ProductList = ({
                                 className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
                                 onClick={() => handleCategoryChange(cat)}
                             >
-                                {cat}
+                                {getCategoryDisplayName(cat)}
                             </button>
                         ))}
                     </div>
@@ -200,16 +252,31 @@ const ProductList = ({
                 )}
             </div>
 
-            {loadingMore && (
-                <div className="loading-more">
-                    <LoadingSpinner />
-                    <p>Đang tải thêm sản phẩm...</p>
-                </div>
-            )}
-
-            {!hasMore && products.length > 0 && (
-                <div className="no-more-products">
-                    <p>Đã hiển thị tất cả sản phẩm</p>
+            {products.length > 0 && (
+                <div className="pagination">
+                    <button
+                        className="page-btn"
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        « Trước
+                    </button>
+                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+                        <button
+                            key={pageNum}
+                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                            onClick={() => goToPage(pageNum)}
+                        >
+                            {pageNum}
+                        </button>
+                    ))}
+                    <button
+                        className="page-btn"
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Sau »
+                    </button>
                 </div>
             )}
         </div>

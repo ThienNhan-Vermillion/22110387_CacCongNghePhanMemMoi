@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './ProductDetail.css';
+import { getProductByIdApi, updateViewCountApi, toggleFavoriteApi, getProductStatsApi, getSimilarProductsApi, addRecentlyViewedApi } from '../utils/api';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -14,21 +15,31 @@ const ProductDetail = () => {
         comment: ''
     });
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [liked, setLiked] = useState(false);
+    const [stats, setStats] = useState({ purchasedCount: 0, commentsCount: 0, viewCount: 0 });
+    const [similar, setSimilar] = useState([]);
+
+    const hasIncrementedView = useRef(false);
 
     useEffect(() => {
         fetchProduct();
+        // tăng lượt xem khi mở trang chi tiết (chặn gọi 2 lần do React StrictMode)
+        if (!hasIncrementedView.current) {
+            updateViewCountApi(id).catch(() => {});
+            hasIncrementedView.current = true;
+        }
+        // Track as recently viewed when product detail is loaded
+        addRecentlyViewedApi(id).catch(() => {});
     }, [id]);
 
     const fetchProduct = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:8080/v1/api/products/${id}`);
-            const data = await response.json();
-
-            if (data.EC === 0) {
-                setProduct(data.DT);
+            const response = await getProductByIdApi(id);
+            if (response.EC === 0) {
+                setProduct(response.DT);
             } else {
-                setError(data.EM);
+                setError(response.EM);
             }
         } catch (err) {
             setError('Lỗi khi tải sản phẩm');
@@ -36,6 +47,27 @@ const ProductDetail = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        const loadExtra = async () => {
+            try {
+                const [statsRes, similarRes] = await Promise.all([
+                    getProductStatsApi(id),
+                    getSimilarProductsApi(id)
+                ]);
+                if (statsRes?.EC === 0) setStats(statsRes.DT);
+                if (similarRes?.EC === 0) setSimilar(similarRes.DT);
+            } catch (e) {}
+        };
+        loadExtra();
+    }, [id]);
+
+    const onToggleFavorite = async () => {
+        try {
+            const res = await toggleFavoriteApi(id);
+            if (res?.EC === 0) setLiked(res.DT.liked);
+        } catch (e) {}
     };
 
     const handleReviewSubmit = async (e) => {
@@ -146,6 +178,9 @@ const ProductDetail = () => {
 
                 <div className="product-info">
                     <h1 className="product-title">{product.name}</h1>
+                    <button className={`favorite-btn ${liked ? 'active' : ''}`} onClick={onToggleFavorite} aria-label="favorite">
+                        <span className="heart">{liked ? '❤' : '♡'}</span>
+                    </button>
                     
                     <div className="product-rating">
                         <div className="stars">
@@ -194,9 +229,32 @@ const ProductDetail = () => {
                         <button className="buy-now-btn" disabled={product.stock === 0}>
                             Mua ngay
                         </button>
+                        <div style={{marginLeft:'auto'}}>
+                            <span><strong>Đã mua:</strong> {stats.purchasedCount}</span>
+                            <span style={{marginLeft:12}}><strong>Bình luận:</strong> {stats.commentsCount}</span>
+                            <span style={{marginLeft:12}}><strong>Lượt xem:</strong> {stats.viewCount}</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {similar.length > 0 && (
+                <div className="similar-products" style={{marginTop:24}}>
+                    <h2>Sản phẩm tương tự</h2>
+                    <div className="product-grid">
+                        {similar.map(p => (
+                            <a key={p._id} href={`/products/${p._id}`} className="product-card" style={{textDecoration:'none'}}>
+                                <div className="product-image" style={{height:180}}>
+                                    <img src={p.image} alt={p.name} />
+                                </div>
+                                <div className="product-info" style={{padding:12}}>
+                                    <h3 className="product-name" style={{margin:0}}>{p.name}</h3>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="product-reviews">
                 <h2>Đánh giá sản phẩm</h2>

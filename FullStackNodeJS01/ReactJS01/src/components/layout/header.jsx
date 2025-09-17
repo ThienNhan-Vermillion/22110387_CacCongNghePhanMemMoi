@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { UsergroupAddOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, ShoppingOutlined } from '@ant-design/icons'
+import { UsergroupAddOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons'
 import { Menu } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/auth.context.jsx'
@@ -42,6 +42,16 @@ const Header = () => {
             key: 'submenu',
             icon: <UsergroupAddOutlined />,
             children: [
+              {
+                label: <Link to={'/favorites'}>Sản phẩm yêu thích</Link>,
+                key: 'favorites',
+                icon: <HeartOutlined />,
+              },
+              {
+                label: <Link to={'/recently-viewed'}>Đã xem gần đây</Link>,
+                key: 'recent',
+                icon: <HistoryOutlined />,
+              },
               {
                 label: 'Logout',
                 key: 'logout',

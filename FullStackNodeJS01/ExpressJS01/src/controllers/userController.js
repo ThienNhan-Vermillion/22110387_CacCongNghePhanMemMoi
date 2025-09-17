@@ -1,4 +1,6 @@
 const { createUserService, loginService, getUserService } = require('../services/userService');
+const User = require('../models/user');
+const Product = require('../models/product');
 
 const createUser = async (req, res) => {
     const { name, email, password } = req.body;
