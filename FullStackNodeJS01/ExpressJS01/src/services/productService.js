@@ -1,19 +1,10 @@
 const Product = require('../models/product');
-const { syncProductToElasticsearch, deleteProductFromElasticsearch } = require('./elasticsearchService');
 
 // Tạo sản phẩm mới
 const createProductService = async (productData) => {
     try {
         const product = new Product(productData);
         const result = await product.save();
-        
-        // Sync với Elasticsearch
-        try {
-            await syncProductToElasticsearch(result._id);
-        } catch (esError) {
-            console.log('Warning: Failed to sync to Elasticsearch:', esError.message);
-        }
-        
         return {
             EC: 0,
             EM: 'Tạo sản phẩm thành công',
@@ -126,13 +117,6 @@ const updateProductService = async (id, updateData) => {
             };
         }
 
-        // Sync với Elasticsearch
-        try {
-            await syncProductToElasticsearch(id);
-        } catch (esError) {
-            console.log('Warning: Failed to sync to Elasticsearch:', esError.message);
-        }
-        
         return {
             EC: 0,
             EM: 'Cập nhật sản phẩm thành công',
@@ -165,13 +149,6 @@ const deleteProductService = async (id) => {
             };
         }
 
-        // Xóa khỏi Elasticsearch
-        try {
-            await deleteProductFromElasticsearch(id);
-        } catch (esError) {
-            console.log('Warning: Failed to delete from Elasticsearch:', esError.message);
-        }
-        
         return {
             EC: 0,
             EM: 'Xóa sản phẩm thành công',
@@ -314,7 +291,4 @@ module.exports = {
     searchProductsService,
     addReviewService
 };
-
-
-
 

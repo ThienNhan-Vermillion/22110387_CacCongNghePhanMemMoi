@@ -55,44 +55,6 @@ const productSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    },
-    viewCount: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
-    tags: [{
-        type: String,
-        trim: true
-    }],
-    discount: {
-        type: Number,
-        default: 0,
-        min: 0,
-        max: 100
-    },
-    isFeatured: {
-        type: Boolean,
-        default: false
-    },
-    weight: {
-        type: Number,
-        min: 0
-    },
-    dimensions: {
-        length: { type: Number, min: 0 },
-        width: { type: Number, min: 0 },
-        height: { type: Number, min: 0 }
-    },
-    brand: {
-        type: String,
-        trim: true
-    },
-    sku: {
-        type: String,
-        unique: true,
-        sparse: true,
-        trim: true
     }
 }, {
     timestamps: true
@@ -101,16 +63,8 @@ const productSchema = new mongoose.Schema({
 // Index for better query performance
 productSchema.index({ category: 1, isActive: 1 });
 productSchema.index({ name: 'text', description: 'text' });
-productSchema.index({ price: 1, rating: -1 });
-productSchema.index({ viewCount: -1, createdAt: -1 });
-productSchema.index({ tags: 1 });
-productSchema.index({ brand: 1 });
-productSchema.index({ isFeatured: 1, isActive: 1 });
 
 const Product = mongoose.model('product', productSchema);
 
 module.exports = Product;
-
-
-
 

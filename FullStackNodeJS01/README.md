@@ -1,205 +1,190 @@
-# 🎯 Bài Tập 05 - Tìm Kiếm Sản Phẩm với Fuzzy Search (Elasticsearch)
+# Full Stack NodeJS - Hệ thống quản lý sản phẩm
 
-## 📋 Tổng Quan
-Dự án triển khai chức năng **tìm kiếm sản phẩm với Fuzzy Search (Elasticsearch)** và **lọc với nhiều điều kiện** bao gồm:
-- ✅ **Fuzzy Search** - Tìm kiếm mờ (có thể tìm được kể cả khi gõ sai chính tả)
-- ✅ **Multi-condition Filtering** - Lọc theo danh mục, giá, đánh giá, khuyến mãi, tồn kho
-- ✅ **Auto-complete Suggestions** - Gợi ý tìm kiếm tự động
-- ✅ **Fallback Mechanism** - Tự động chuyển sang MongoDB khi Elasticsearch không khả dụng
+Dự án Full Stack sử dụng Node.js (Express) cho backend và React cho frontend, với chức năng quản lý sản phẩm, lazy loading và phân trang.
 
-## 🚀 Cách Chạy Dự Án
+## 🚀 Tính năng chính
 
-### **Bước 1: Khởi động Elasticsearch với Docker**
-```bash
-# Khởi động Elasticsearch + Kibana
-docker-compose up -d
+### Backend (Express.js)
+- ✅ API RESTful cho quản lý sản phẩm (CRUD)
+- ✅ Phân trang và lazy loading
+- ✅ Tìm kiếm sản phẩm theo tên/mô tả
+- ✅ Lọc sản phẩm theo danh mục
+- ✅ Hệ thống đánh giá sản phẩm
+- ✅ Authentication với JWT
+- ✅ MongoDB với Mongoose ODM
 
-# Kiểm tra Elasticsearch đã sẵn sàng
-curl http://localhost:9200
-```
+### Frontend (React.js)
+- ✅ Giao diện hiện đại và responsive
+- ✅ Lazy loading sản phẩm khi scroll
+- ✅ Tìm kiếm và lọc sản phẩm
+- ✅ Chi tiết sản phẩm với đánh giá
+- ✅ Hệ thống đánh giá sản phẩm
+- ✅ Trang chủ với sản phẩm nổi bật
 
-### **Bước 2: Khởi động Backend**
-```bash
-cd ExpressJS01
-npm install
-npm run seed      # Tạo dữ liệu mẫu
-npm run sync-es   # Đồng bộ dữ liệu sang Elasticsearch
-npm start         # Khởi động server
-```
-
-### **Bước 3: Khởi động Frontend**
-```bash
-cd ReactJS01
-npm install
-npm run dev       # Khởi động development server
-```
-
-### **Hoặc sử dụng script tự động:**
-```bash
-start-project.bat
-```
-
-## 📊 Truy Cập Ứng Dụng
-
-- 🌐 **Frontend**: http://localhost:5173
-- 🔍 **Backend API**: http://localhost:8080
-- 📊 **Kibana Dashboard**: http://localhost:5601
-
-## 🎯 Tính Năng Chính
-
-### **1. Fuzzy Search (Tìm kiếm mờ)**
-- ✅ Tìm được kể cả khi gõ sai chính tả
-- ✅ Ví dụ: "dien thoai" → tìm được "điện thoại"
-- ✅ Ví dụ: "iphon" → tìm được "iPhone"
-
-### **2. Multi-condition Filtering**
-- ✅ **Danh mục**: electronics, clothing, books, home, sports, beauty, toys, food
-- ✅ **Khoảng giá**: từ-đến
-- ✅ **Đánh giá**: tối thiểu 1-5 sao
-- ✅ **Khuyến mãi**: tối thiểu 10%, 20%, 30%, 50%
-- ✅ **Tồn kho**: chỉ sản phẩm còn hàng
-- ✅ **Tags**: các thẻ sản phẩm
-
-### **3. Auto-complete Suggestions**
-- ✅ Gợi ý tên sản phẩm khi gõ
-- ✅ Click để tìm kiếm nhanh
-
-## 📡 API Endpoints
-
-### **Tìm kiếm Fuzzy**
-```
-GET /v1/api/products/fuzzy-search?q=điện thoại&category=electronics&minPrice=1000000
-```
-
-### **Lọc sản phẩm**
-```
-GET /v1/api/products/filter?category=electronics&minRating=4&inStock=true
-```
-
-### **Gợi ý tìm kiếm**
-```
-GET /v1/api/products/suggestions?q=điện
-```
-
-### **Lấy tùy chọn lọc**
-```
-GET /v1/api/products/filter-options
-```
-
-## 🧪 Test Các Chức Năng
-
-### **Test Backend**
-```bash
-cd ExpressJS01
-
-# Test Elasticsearch
-npm run test-es
-
-# Test MongoDB fallback
-npm run test-fallback
-
-# Seed dữ liệu mẫu
-npm run seed
-
-# Đồng bộ dữ liệu
-npm run sync-es
-```
-
-### **Test Frontend**
-1. Truy cập: http://localhost:5173/products
-2. Thử tìm kiếm với từ khóa có lỗi chính tả
-3. Thử các bộ lọc khác nhau
-4. Kiểm tra gợi ý tìm kiếm
-
-## 📁 Cấu Trúc Dự Án
+## 📁 Cấu trúc dự án
 
 ```
 FullStackNodeJS01/
-├── ExpressJS01/                 # Backend API
+├── ExpressJS01/                 # Backend
 │   ├── src/
-│   │   ├── config/
-│   │   │   └── elasticsearch.js # Cấu hình Elasticsearch
-│   │   ├── services/
-│   │   │   ├── elasticsearchService.js    # Logic Elasticsearch
-│   │   │   └── fallbackSearchService.js   # Fallback MongoDB
-│   │   ├── controllers/
-│   │   │   └── productController.js       # API Controllers
-│   │   └── scripts/
-│   │       ├── syncToElasticsearch.js     # Đồng bộ dữ liệu
-│   │       ├── testElasticsearch.js       # Test Elasticsearch
-│   │       └── testFallbackSearch.js      # Test MongoDB fallback
+│   │   ├── config/             # Cấu hình database
+│   │   ├── controllers/        # Controllers
+│   │   ├── middleware/         # Middleware
+│   │   ├── models/            # Mongoose models
+│   │   ├── routes/            # API routes
+│   │   ├── services/          # Business logic
+│   │   ├── scripts/           # Seed data scripts
+│   │   └── server.js          # Entry point
 │   └── package.json
-├── ReactJS01/                   # Frontend React
+├── ReactJS01/                  # Frontend
 │   ├── src/
-│   │   ├── components/
-│   │   │   └── search/
-│   │   │       └── AdvancedSearch.jsx     # Component tìm kiếm
-│   │   └── utils/
-│   │       └── api.js                     # API calls
+│   │   ├── components/        # React components
+│   │   │   ├── product/       # Product components
+│   │   │   ├── common/        # Common components
+│   │   │   └── layout/        # Layout components
+│   │   ├── pages/             # Page components
+│   │   ├── styles/            # Global styles
+│   │   └── utils/             # Utilities
 │   └── package.json
-├── docker-compose.yml           # Cấu hình Docker
-└── start-project.bat            # Script khởi động
+└── README.md
 ```
 
-## 🎓 Điểm Nổi Bật
+## 🛠️ Cài đặt và chạy dự án
 
-### **1. Kiến Trúc Tốt**
-- ✅ **Separation of Concerns**: Tách biệt logic business và presentation
-- ✅ **Service Layer**: Encapsulation logic tìm kiếm
-- ✅ **Fallback Strategy**: Đảm bảo tính khả dụng
+### 1. Cài đặt Backend (Express.js)
 
-### **2. Tính Năng Nâng Cao**
-- ✅ **Fuzzy Search**: Tìm kiếm thông minh với lỗi chính tả
-- ✅ **Multi-condition Filtering**: Lọc phức tạp với nhiều điều kiện
-- ✅ **Auto-complete**: Gợi ý tìm kiếm tự động
-- ✅ **Real-time Sync**: Đồng bộ dữ liệu real-time
-
-### **3. User Experience**
-- ✅ **Responsive Design**: Hoạt động tốt trên mọi thiết bị
-- ✅ **Loading States**: Hiển thị trạng thái loading
-- ✅ **Error Handling**: Xử lý lỗi graceful
-- ✅ **Vietnamese Support**: Hỗ trợ tiếng Việt đầy đủ
-
-## 🏆 Kết Quả Test
-
-```
-🔍 Testing Fuzzy Search...
-1. Tìm kiếm chính xác "iPhone": Found 1 products
-2. Tìm kiếm mờ "iphon" (thiếu e): Found 1 products
-3. Tìm kiếm "phone" với filter: Found 1 products
-
-🔧 Testing Filter Products...
-1. Filter by category=electronics: Found 3 products
-2. Filter by price range: Found 4 products
-3. Filter by minRating=4: Found 12 products
-
-💡 Testing Search Suggestions...
-1. Suggestions for "iph": ['iPhone 15 Pro Max']
-
-📊 Testing Filter Options...
-Filter options: {
-  categories: 8,
-  priceRange: { min: 199000, max: 45990000 },
-  ratingRange: { min: 4.2, max: 4.8 },
-  discountRange: { min: 0, max: 0 },
-  tags: 0
-}
-
-⚡ Testing Performance...
-10 concurrent searches completed in 31ms
-Average time per search: 3.1ms
-
-✅ All tests completed successfully!
+```bash
+cd ExpressJS01
+npm install
 ```
 
-## 🎉 Hoàn Thành!
+Tạo file `.env` trong thư mục `ExpressJS01`:
+```env
+MONGODB_URI=mongodb://localhost:27017/fullstack_nodejs
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRE=7d
+PORT=8080
+```
 
-Dự án đã hoàn thành thành công với:
-- ✅ **Elasticsearch** hoạt động hoàn hảo
-- ✅ **Fuzzy Search** tìm kiếm thông minh
-- ✅ **Multi-condition Filtering** linh hoạt
-- ✅ **Fallback MongoDB** đảm bảo tính khả dụng
-- ✅ **Frontend React** giao diện đẹp
-- ✅ **API hoàn chỉnh** với documentation
+Chạy seed data để tạo sản phẩm mẫu:
+```bash
+npm run seed
+```
 
-**Chúc bạn thành công với bài nộp! 🎓**
+Chạy server:
+```bash
+npm run dev
+```
+
+Backend sẽ chạy tại: `http://localhost:8080`
+
+### 2. Cài đặt Frontend (React.js)
+
+```bash
+cd ReactJS01
+npm install
+```
+
+Chạy development server:
+```bash
+npm run dev
+```
+
+Frontend sẽ chạy tại: `http://localhost:5173`
+
+## 📚 API Endpoints
+
+### Public APIs (không cần authentication)
+- `GET /api/products` - Lấy danh sách sản phẩm (có phân trang)
+- `GET /api/products/featured` - Lấy sản phẩm nổi bật
+- `GET /api/products/category/:category` - Lấy sản phẩm theo danh mục
+- `GET /api/products/search` - Tìm kiếm sản phẩm
+- `GET /api/products/categories` - Lấy danh sách danh mục
+- `GET /api/products/:id` - Lấy chi tiết sản phẩm
+
+### Protected APIs (cần authentication)
+- `POST /api/products` - Tạo sản phẩm mới
+- `PUT /api/products/:id` - Cập nhật sản phẩm
+- `DELETE /api/products/:id` - Xóa sản phẩm
+- `POST /api/products/:id/reviews` - Thêm đánh giá sản phẩm
+
+### Query Parameters cho phân trang
+- `page` - Trang hiện tại (mặc định: 1)
+- `limit` - Số sản phẩm mỗi trang (mặc định: 10)
+- `category` - Lọc theo danh mục
+- `search` - Tìm kiếm theo từ khóa
+
+## 🎨 Tính năng Frontend
+
+### Trang chủ
+- Hero section với call-to-action
+- Sản phẩm nổi bật
+- Các tính năng nổi bật
+
+### Trang sản phẩm
+- Lazy loading khi scroll xuống cuối trang
+- Tìm kiếm theo tên sản phẩm
+- Lọc theo danh mục
+- Hiển thị grid responsive
+
+### Chi tiết sản phẩm
+- Thông tin chi tiết sản phẩm
+- Hệ thống đánh giá và bình luận
+- Form đánh giá sản phẩm
+
+## 🔧 Công nghệ sử dụng
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT (JSON Web Tokens)
+- bcrypt (mã hóa mật khẩu)
+
+### Frontend
+- React.js
+- React Router
+- CSS3 (Flexbox, Grid)
+- Ant Design Icons
+
+## 📱 Responsive Design
+
+Giao diện được thiết kế responsive, tương thích với:
+- Desktop (1200px+)
+- Tablet (768px - 1199px)
+- Mobile (dưới 768px)
+
+## 🚀 Tính năng nâng cao
+
+### Lazy Loading
+- Tự động load thêm sản phẩm khi scroll đến cuối trang
+- Loading indicator khi đang tải
+- Tối ưu hiệu suất với infinite scroll
+
+### Tìm kiếm thông minh
+- Tìm kiếm theo tên và mô tả sản phẩm
+- Highlight kết quả tìm kiếm
+- Debounce để tối ưu performance
+
+### Hệ thống đánh giá
+- Đánh giá từ 1-5 sao
+- Bình luận chi tiết
+- Tính điểm trung bình tự động
+- Hiển thị số lượng đánh giá
+
+## 📝 Ghi chú
+
+- Đảm bảo MongoDB đang chạy trước khi start backend
+- Cần có tài khoản để đánh giá sản phẩm
+- Dữ liệu sản phẩm mẫu sẽ được tạo tự động khi chạy seed script
+- API sử dụng format response chuẩn với EC (Error Code), EM (Error Message), DT (Data)
+
+## 🤝 Đóng góp
+
+Mọi đóng góp đều được chào đón! Hãy tạo issue hoặc pull request để cải thiện dự án.
+
+## 📄 License
+
+MIT License
+

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './ProductDetail.css';
-import { getProductByIdApi, updateViewCountApi } from '../utils/api';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -16,25 +15,20 @@ const ProductDetail = () => {
     });
     const [submittingReview, setSubmittingReview] = useState(false);
 
-    const hasIncrementedView = useRef(false);
-
     useEffect(() => {
         fetchProduct();
-        // tăng lượt xem khi mở trang chi tiết (chặn gọi 2 lần do React StrictMode)
-        if (!hasIncrementedView.current) {
-            updateViewCountApi(id).catch(() => {});
-            hasIncrementedView.current = true;
-        }
     }, [id]);
 
     const fetchProduct = async () => {
         try {
             setLoading(true);
-            const response = await getProductByIdApi(id);
-            if (response.EC === 0) {
-                setProduct(response.DT);
+            const response = await fetch(`http://localhost:8080/v1/api/products/${id}`);
+            const data = await response.json();
+
+            if (data.EC === 0) {
+                setProduct(data.DT);
             } else {
-                setError(response.EM);
+                setError(data.EM);
             }
         } catch (err) {
             setError('Lỗi khi tải sản phẩm');

@@ -63,9 +63,6 @@ const ProductCard = ({ product }) => {
                 
                 <div className="product-price">
                     <span className="current-price">{formatPrice(product.price)}</span>
-                    {product.discount > 0 && (
-                        <span className="discount">-{product.discount}%</span>
-                    )}
                 </div>
                 
                 <div className="product-meta">
@@ -73,7 +70,6 @@ const ProductCard = ({ product }) => {
                     <span className={`stock-status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
                         {product.stock > 0 ? 'Còn hàng' : 'Hết hàng'}
                     </span>
-                    <span className="view-count">{product.viewCount || 0} lượt xem</span>
                 </div>
             </div>
         </div>
@@ -81,10 +77,4 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
-
-
-
-
-
-
 
