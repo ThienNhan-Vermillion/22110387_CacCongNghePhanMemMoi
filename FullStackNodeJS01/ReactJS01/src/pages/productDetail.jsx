@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './ProductDetail.css';
-import { getProductByIdApi, updateViewCountApi, toggleFavoriteApi, getProductStatsApi, getSimilarProductsApi, addRecentlyViewedApi } from '../utils/api';
+import { getProductByIdApi, updateViewCountApi, toggleFavoriteApi, getProductStatsApi, getSimilarProductsApi, addRecentlyViewedApi, addReviewApi } from '../utils/api';
+import { useCart } from '../components/context/cart.context.jsx';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -20,6 +21,7 @@ const ProductDetail = () => {
     const [similar, setSimilar] = useState([]);
 
     const hasIncrementedView = useRef(false);
+    const { addItem } = useCart();
 
     useEffect(() => {
         fetchProduct();
@@ -80,25 +82,18 @@ const ProductDetail = () => {
 
         try {
             setSubmittingReview(true);
-            const token = localStorage.getItem('token');
-            
-            const response = await fetch(`http://localhost:8080/v1/api/products/${id}/reviews`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(reviewForm)
-            });
-
-            const data = await response.json();
-
+            const data = await addReviewApi(id, reviewForm);
             if (data.EC === 0) {
-                alert('Đánh giá thành công!');
+                // Cập nhật ngay danh sách reviews trên UI
+                setProduct(prev => ({
+                    ...prev,
+                    reviews: data.DT.reviews,
+                    rating: data.DT.rating
+                }));
+                setStats(prev => ({ ...prev, commentsCount: new Set((data.DT.reviews||[]).map(r => r.user)).size }))
                 setReviewForm({ rating: 5, comment: '' });
-                fetchProduct(); // Reload product to show new review
             } else {
-                alert(data.EM);
+                alert(data.EM || 'Gửi đánh giá thất bại');
             }
         } catch (err) {
             alert('Lỗi khi gửi đánh giá');
@@ -211,22 +206,21 @@ const ProductDetail = () => {
                                 {product.stock > 0 ? 'Còn hàng' : 'Hết hàng'}
                             </span>
                         </div>
-                        {product.stock > 0 && (
-                            <div className="meta-item">
-                                <strong>Số lượng còn lại:</strong>
-                                <span>{product.stock} sản phẩm</span>
-                            </div>
-                        )}
+                        <div className="meta-item">
+                            <strong>Đã bán:</strong>
+                            <span>{product.soldCount || 0} sản phẩm</span>
+                        </div>
                     </div>
 
                     <div className="product-actions">
                         <button 
                             className="add-to-cart-btn"
                             disabled={product.stock === 0}
+                            onClick={() => addItem(product, 1)}
                         >
                             {product.stock > 0 ? 'Thêm vào giỏ hàng' : 'Hết hàng'}
                         </button>
-                        <button className="buy-now-btn" disabled={product.stock === 0}>
+                        <button className="buy-now-btn" disabled={product.stock === 0} onClick={() => { addItem(product, 1); navigate('/cart') }}>
                             Mua ngay
                         </button>
                         <div style={{marginLeft:'auto'}}>

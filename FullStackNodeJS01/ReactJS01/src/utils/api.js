@@ -110,6 +110,12 @@ export const getProductStatsApi = (id) => {
   return axios.get(URL_API)
 }
 
+// Checkout
+export const checkoutApi = (items) => {
+  const URL_API = `/v1/api/checkout`
+  return axios.post(URL_API, { items })
+}
+
 // Admin APIs (cần authentication)
 export const createProductApi = (productData) => {
   const URL_API = '/v1/api/products'

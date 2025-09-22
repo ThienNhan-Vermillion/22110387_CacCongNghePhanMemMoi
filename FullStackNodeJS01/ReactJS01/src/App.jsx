@@ -10,6 +10,8 @@ import ProductsPage from './pages/products'
 import ProductDetailPage from './pages/productDetail'
 import FavoritesPage from './pages/favorites'
 import RecentlyViewedPage from './pages/recentlyViewed'
+import CartPage from './pages/cart'
+import { CartProvider } from './components/context/cart.context.jsx'
 import axios from './utils/axios.customize'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from './components/context/auth.context.jsx'
@@ -46,7 +48,7 @@ function App() {
           <Spin />
         </div>
       ) : (
-        <>
+        <CartProvider>
           <Header />
           <div style={{ padding: 16 }}>
             <Routes>
@@ -58,10 +60,11 @@ function App() {
               <Route path="/products/:id" element={<ProductDetailPage />} />
               <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/recently-viewed" element={<RecentlyViewedPage />} />
+              <Route path="/cart" element={<CartPage />} />
             </Routes>
           </div>
           <Outlet />
-        </>
+        </CartProvider>
       )}
     </div>
   )

@@ -76,6 +76,15 @@ const productSchema = new mongoose.Schema({
         default: 0,
         min: 0
     },
+    buyers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+    soldCount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
     isFeatured: {
         type: Boolean,
         default: false

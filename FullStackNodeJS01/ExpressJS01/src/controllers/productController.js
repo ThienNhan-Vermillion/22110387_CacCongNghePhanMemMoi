@@ -149,7 +149,10 @@ const addReview = async (req, res) => {
     try {
         const { id } = req.params;
         const { rating, comment } = req.body;
-        const userId = req.user.id; // Từ middleware auth
+        const User = require('../models/user');
+        const userEmail = req.user?.email;
+        const user = await User.findOne({ email: userEmail });
+        const userId = user?._id; // Lấy id user từ DB
 
         if (!rating || rating < 1 || rating > 5) {
             return res.status(400).json({
@@ -157,6 +160,10 @@ const addReview = async (req, res) => {
                 EM: 'Đánh giá phải từ 1 đến 5 sao',
                 DT: null
             });
+        }
+
+        if (!userId) {
+            return res.status(401).json({ EC: 1, EM: 'Không xác định được người dùng', DT: null });
         }
 
         const result = await addReviewService(id, userId, rating, comment);

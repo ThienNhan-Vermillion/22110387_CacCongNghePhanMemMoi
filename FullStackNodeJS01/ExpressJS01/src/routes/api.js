@@ -82,5 +82,38 @@ routerAPI.get('/recently-viewed', async (req, res) => {
     }
 });
 
+// Demo checkout endpoint: adds items and updates product buyers/purchasedCount, stock, soldCount
+routerAPI.post('/checkout', async (req, res) => {
+    try {
+        const userEmail = req.user.email;
+        const user = await User.findOne({ email: userEmail });
+        if (!user) return res.status(404).json({ EC: 2, EM: 'User not found', DT: null });
+        const items = req.body?.items || [];
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ EC: 1, EM: 'Giỏ hàng trống', DT: null });
+        }
+        const productMap = new Map(items.map(i => [i.productId, i.quantity || 1]));
+        const ids = [...productMap.keys()].filter(Boolean);
+        const products = await Product.find({ _id: { $in: ids } });
+        for (const p of products) {
+            const qty = productMap.get(p._id.toString()) || 1;
+            const alreadyBuyer = (p.buyers || []).some(b => b.toString() === user._id.toString());
+            if (!alreadyBuyer) {
+                p.buyers = [...(p.buyers || []), user._id];
+                p.purchasedCount = (p.purchasedCount || 0) + 1;
+            }
+            p.soldCount = (p.soldCount || 0) + qty;
+            if (typeof p.stock === 'number') {
+                p.stock = Math.max(0, p.stock - qty);
+            }
+            await p.save();
+        }
+        return res.status(200).json({ EC: 0, EM: 'Thanh toán thành công (demo)', DT: { purchased: products.length } });
+    } catch (e) {
+        console.log('Checkout error:', e);
+        return res.status(500).json({ EC: 1, EM: 'Server error', DT: null });
+    }
+});
+
 module.exports = routerAPI; //export default
 

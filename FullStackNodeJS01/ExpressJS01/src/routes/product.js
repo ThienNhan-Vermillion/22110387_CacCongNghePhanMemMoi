@@ -57,8 +57,10 @@ router.get('/:id/stats', async (req, res) => {
         const { id } = req.params;
         const product = await Product.findById(id);
         if (!product) return res.status(404).json({ EC: 2, EM: 'Không tìm thấy sản phẩm', DT: null });
-        const commentsCount = (product.reviews || []).length;
-        const purchasedCount = product.purchasedCount || 0;
+        const uniqueCommenters = new Set((product.reviews || []).map(r => (r.user || '').toString()));
+        const commentsCount = uniqueCommenters.size;
+        const uniqueBuyers = new Set((product.buyers || []).map(b => b.toString()));
+        const purchasedCount = uniqueBuyers.size || product.purchasedCount || 0;
         return res.status(200).json({ EC: 0, EM: 'OK', DT: { purchasedCount, commentsCount, viewCount: product.viewCount || 0 } });
     } catch (e) {
         return res.status(500).json({ EC: 1, EM: 'Lỗi server', DT: null });

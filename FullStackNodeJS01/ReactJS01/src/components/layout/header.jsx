@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react'
-import { UsergroupAddOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons'
+import { UsergroupAddOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import { useCart } from '../context/cart.context.jsx'
 import { Menu } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/auth.context.jsx'
@@ -7,6 +8,7 @@ import { AuthContext } from '../context/auth.context.jsx'
 const Header = () => {
   const navigate = useNavigate()
   const { auth, setAuth } = useContext(AuthContext)
+  const { items: cartItems = [] } = useCart()
 
   const setAuthNull = () => {
     setAuth({
@@ -24,7 +26,7 @@ const Header = () => {
     navigate('/')
   }
 
-  const items = [
+  const menuItems = [
     {
       label: <Link to={'/'}>Home Page</Link>,
       key: 'home',
@@ -34,6 +36,11 @@ const Header = () => {
       label: <Link to={'/products'}>Sản phẩm</Link>,
       key: 'products',
       icon: <ShoppingOutlined />,
+    },
+    {
+      label: <Link to={'/cart'}>Giỏ hàng ({cartItems.reduce((s,i)=>s+i.quantity,0)})</Link>,
+      key: 'cart',
+      icon: <ShoppingCartOutlined />,
     },
     ...(auth?.isAuthenticated
       ? [
@@ -81,7 +88,7 @@ const Header = () => {
   }
 
   return (
-    <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
+    <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
   )
 }
 
